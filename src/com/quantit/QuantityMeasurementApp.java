@@ -62,6 +62,17 @@ public class QuantityMeasurementApp {
             return new QuantityLength(sumInTargetUnit, this.unit);
         }
 
+        public QuantityLength add(QuantityLength other, LengthUnit targetUnit) {
+            if (other == null || targetUnit == null) {
+                throw new IllegalArgumentException("Operands and target unit cannot be null");
+            }
+            double thisBase = this.unit.toBaseUnit(this.value);
+            double otherBase = other.unit.toBaseUnit(other.value);
+            double sumBase = thisBase + otherBase;
+            double sumInTargetUnit = sumBase / targetUnit.getConversionFactor();
+            return new QuantityLength(sumInTargetUnit, targetUnit);
+        }
+
         @Override
         public boolean equals(Object obj) {
             if (this == obj) return true;
@@ -81,6 +92,6 @@ public class QuantityMeasurementApp {
     public static void main(String[] args) {
         QuantityLength q1 = new QuantityLength(1.0, LengthUnit.FEET);
         QuantityLength q2 = new QuantityLength(12.0, LengthUnit.INCH);
-        System.out.println(q1.add(q2));
+        System.out.println(q1.add(q2, LengthUnit.YARD));
     }
 }
