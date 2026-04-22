@@ -2,27 +2,6 @@ package com.quantit;
 
 public class QuantityMeasurementApp {
 
-    public enum LengthUnit {
-        FEET(1.0),
-        INCH(1.0/12.0),
-        YARD(3.0),
-        CENTIMETER(0.0328084);
-
-        private final double conversionFactor;
-
-        LengthUnit(double conversionFactor) {
-            this.conversionFactor = conversionFactor;
-        }
-
-        public double toBaseUnit(double value) {
-            return value * conversionFactor;
-        }
-
-        public double getConversionFactor() {
-            return conversionFactor;
-        }
-    }
-
     public static class QuantityLength {
         private final double value;
         private final LengthUnit unit;
@@ -43,33 +22,50 @@ public class QuantityMeasurementApp {
             return unit;
         }
 
-        public double convertTo(LengthUnit targetUnit) {
+        /**
+         * Converts this quantity to the target unit.
+         * @param targetUnit the target unit
+         * @return a new QuantityLength in the target unit
+         */
+        public QuantityLength convertTo(LengthUnit targetUnit) {
             if (targetUnit == null) {
                 throw new IllegalArgumentException("Target unit cannot be null");
             }
-            double baseValue = this.unit.toBaseUnit(this.value);
-            return baseValue / targetUnit.getConversionFactor();
+            double baseValue = unit.convertToBaseUnit(value);
+            double convertedValue = targetUnit.convertFromBaseUnit(baseValue);
+            return new QuantityLength(convertedValue, targetUnit);
         }
 
+        /**
+         * Adds this quantity to another and returns result in the same unit as this quantity.
+         * @param other the quantity to add
+         * @return a new QuantityLength representing the sum
+         */
         public QuantityLength add(QuantityLength other) {
             if (other == null) {
                 throw new IllegalArgumentException("Operand cannot be null");
             }
-            double thisBase = this.unit.toBaseUnit(this.value);
-            double otherBase = other.unit.toBaseUnit(other.value);
+            double thisBase = unit.convertToBaseUnit(value);
+            double otherBase = other.unit.convertToBaseUnit(other.value);
             double sumBase = thisBase + otherBase;
-            double sumInTargetUnit = sumBase / this.unit.getConversionFactor();
-            return new QuantityLength(sumInTargetUnit, this.unit);
+            double sumInTargetUnit = unit.convertFromBaseUnit(sumBase);
+            return new QuantityLength(sumInTargetUnit, unit);
         }
 
+        /**
+         * Adds this quantity to another and returns result in the specified target unit.
+         * @param other the quantity to add
+         * @param targetUnit the target unit for the result
+         * @return a new QuantityLength representing the sum in the target unit
+         */
         public QuantityLength add(QuantityLength other, LengthUnit targetUnit) {
             if (other == null || targetUnit == null) {
                 throw new IllegalArgumentException("Operands and target unit cannot be null");
             }
-            double thisBase = this.unit.toBaseUnit(this.value);
-            double otherBase = other.unit.toBaseUnit(other.value);
+            double thisBase = unit.convertToBaseUnit(value);
+            double otherBase = other.unit.convertToBaseUnit(other.value);
             double sumBase = thisBase + otherBase;
-            double sumInTargetUnit = sumBase / targetUnit.getConversionFactor();
+            double sumInTargetUnit = targetUnit.convertFromBaseUnit(sumBase);
             return new QuantityLength(sumInTargetUnit, targetUnit);
         }
 
@@ -78,8 +74,8 @@ public class QuantityMeasurementApp {
             if (this == obj) return true;
             if (obj == null || getClass() != obj.getClass()) return false;
             QuantityLength other = (QuantityLength) obj;
-            double thisBase = this.unit.toBaseUnit(this.value);
-            double otherBase = other.unit.toBaseUnit(other.value);
+            double thisBase = unit.convertToBaseUnit(value);
+            double otherBase = other.unit.convertToBaseUnit(other.value);
             return Double.compare(thisBase, otherBase) == 0;
         }
 
