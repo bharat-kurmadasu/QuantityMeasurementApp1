@@ -24,8 +24,19 @@ public class QuantityMeasurementApp {
         private final LengthUnit unit;
 
         public QuantityLength(double value, LengthUnit unit) {
+            if (unit == null || !Double.isFinite(value)) {
+                throw new IllegalArgumentException("Invalid input");
+            }
             this.value = value;
             this.unit = unit;
+        }
+
+        public double convertTo(LengthUnit targetUnit) {
+            if (targetUnit == null) {
+                throw new IllegalArgumentException("Target unit cannot be null");
+            }
+            double baseValue = this.unit.toBaseUnit(this.value);
+            return baseValue / targetUnit.conversionFactor;
         }
 
         @Override
@@ -37,11 +48,22 @@ public class QuantityMeasurementApp {
             double otherBase = other.unit.toBaseUnit(other.value);
             return Double.compare(thisBase, otherBase) == 0;
         }
+
+        @Override
+        public String toString() {
+            return value + " " + unit.name();
+        }
+    }
+
+    public static double convert(double value, LengthUnit source, LengthUnit target) {
+        QuantityLength q = new QuantityLength(value, source);
+        return q.convertTo(target);
     }
 
     public static void main(String[] args) {
-        QuantityLength q1 = new QuantityLength(1.0, LengthUnit.YARD);
-        QuantityLength q2 = new QuantityLength(3.0, LengthUnit.FEET);
-        System.out.println(q1.equals(q2));
+        System.out.println(convert(1.0, LengthUnit.FEET, LengthUnit.INCH));
+        System.out.println(convert(3.0, LengthUnit.YARD, LengthUnit.FEET));
+        System.out.println(convert(36.0, LengthUnit.INCH, LengthUnit.YARD));
+        System.out.println(convert(1.0, LengthUnit.CENTIMETER, LengthUnit.INCH));
     }
 }
